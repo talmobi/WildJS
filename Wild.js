@@ -13,9 +13,12 @@ var MoveEnum = {
 	HOLD: 'H'
 }
 
+var stage;
+
 var GLOBAL = {
 	SEED: 1,
-	MAP_SIZE: 1,
+	FPS: 10,
+	SUBMISSIONS: 1,
 	stageWidth: 320,
 	stageHeight: 320
 }
@@ -34,7 +37,31 @@ var Tools = {
 		return arr;
 	},
 
-	SIZE: Math.round(Math.sqrt((GLOBAL.MAP_SIZE + 3) * 20)),
+	SIZE: Math.round(Math.sqrt((GLOBAL.SUBMISSIONS + 3)) * 20)
+}
+
+var newBorder = function(x, y, w, h, color) {
+	if (!color)
+		color = "white";
+
+	var border = new createjs.Shape();
+	border.snapToPixel = true;
+	border.graphics.setStrokeStyle(1).beginStroke(color).rect(0,0,w,h);
+	border.x = x;
+	border.y = y;
+	return border;
+}
+
+var newBlock = function(x, y, w, h, color) {
+	if (!color)
+		color = "white";
+
+	var border = new createjs.Shape();
+	border.snapToPixel = true;
+	border.graphics.setStrokeStyle(1).beginFill(color).rect(0,0,w,h);
+	border.x = x;
+	border.y = y;
+	return border;
 }
 
 var Game = {
@@ -42,7 +69,8 @@ var Game = {
 	
 	// easy simple determinstic RNG
 	random: function() {
-		var x = Math.sin(GLOBAL.SEED++) * 10000;
+		return Math.random();
+		var x = Math.sin(GLOBAL.SEED++) * 11111;
 		return (x - Math.floor(x));
 	},
 
@@ -51,45 +79,51 @@ var Game = {
 		canvas.width = GLOBAL.stageWidth;
 		canvas.height = GLOBAL.stageHeight;
 
-		var stage = new createjs.Stage(canvas);
+		if (!canvas) {
+			console.error("Provide the canvas element id to draw on.");
+			return;
+		}
+
+		stage = new createjs.Stage(canvas);
 		stage.regX = .5;
 		stage.regY = .5;
 
 		var w = GLOBAL.stageWidth;
 		var h = GLOBAL.stageHeight;
 
-		var border = new createjs.Shape();
-		border.snapToPixel = true;
-		border.graphics.setStrokeStyle(1).beginStroke("white").rect(0,0,w,h);
+		stage.addChild(newBorder(1,1,w-1,h-1));
 
-		stage.addChild(border);
-
-		console.log("Board: " + this.board[0][0].length)
+		stage.update();
 
 		// populate
 		for (var i = 0; i < 4; i++) {
 			switch(i) {
 				case 0:
-					this.populate(Bear, 1);
+					this.populate(Bear, 100);
 				case 1:
-					this.populate(Lion, 1);
+					this.populate(Lion, 100);
 				case 2:
-					this.populate(Wolf, 1);
+					this.populate(Wolf, 100);
 				default:
-					this.populate(Stone, 1);
+					this.populate(Stone, 100);
 			}
 		}
 
 		createjs.Ticker.on("tick", this.tick);
-		createjs.Ticker.setFPS(1);
+		createjs.Ticker.setFPS( GLOBAL.FPS );
 	},
 
 	printBoard: function() {
 		var size = Tools.SIZE;
 
 		// flipped ( print horizontal first )
+		var line = ""
+		for (var i = 0; i < size / 2 + 1; i++)
+			line += '* ';
+		console.log(line);
+
 		for (var j = 0; j < size; j++) {
-			str = "";
+			var str = "";
 			for (var i = 0; i < size; i++) {
 				var animal = this.board[i][j][0];
 				if (animal != null)
@@ -97,24 +131,60 @@ var Game = {
 				else
 					str += '.';
 			}
-			console.log(str);
+			console.log('*' + str + '*');
 		}
+		console.log(' ' + line);
+	},
+
+	drawBoard: function() {
+		var size = Tools.SIZE;
+		stage.removeAllChildren();
+
+		var w = GLOBAL.stageWidth / Tools.SIZE,
+				h = GLOBAL.stageHeight / Tools.SIZE;
+
+		var newBox = function(x, y, color) {
+			var b = new createsh.Shape();
+			b.snapToPixel = true;
+			b.graphics.setStrokeStyle(1).beginStroke(color).rect(0,0,w,h);
+			b.x = x;
+			b.y = y;
+			return b;
+		}
+
+		for (var j = 0; j < size; j++) {
+			for (var i = 0; i < size; i++) {
+				var animal = this.board[i][j][0];
+				if (animal != null) {
+					var b = newBlock(i * w + 1, j * h + 1, w - 1, h - 1, animal.color || "white");
+					stage.addChild(b);
+				}
+			}
+		}
+
+		stage.addChild(newBorder(1,1,GLOBAL.stageWidth-1,GLOBAL.stageHeight-1));
 	},
 
 	tick: function() {
 		Game.iterate();
 		Game.collide();
-		Game.printBoard();
+		
+		
+		Game.drawBoard();
+		// Game.printBoard();
+		stage.update();
 	},
 
 	populate: function(species, num) {
 		while (num > 0) {
 			var row = Math.floor(Game.random() * Tools.SIZE),
 					col = Math.floor(Game.random() * Tools.SIZE);
-					console.log("row: " + row + ", col: " + col);
-			if (this.board[row][col].length < 1)
-				this.board[row][col].push(species);
-			num--;
+					// console.log("row: " + row + ", col: " + col);
+			if (this.board[row][col].length < 1) {
+				var babyAnimal = Object.create(species);
+				this.board[row][col].push( babyAnimal );
+				num--;
+			}
 		}
 	},
 
@@ -125,7 +195,7 @@ var Game = {
 			area[i] = new Array(3);
 			for (var j = 0; j < 3; j++) {
 				var tx = (x + i - 1 + SIZE) % SIZE,
-						ty = (y + j - 1+ SIZE) % SIZE;
+						ty = (y + j - 1 + SIZE) % SIZE;
 				var animal = this.board[tx][ty][0];
 				area[i][j] = animal != null ? this.board[tx][ty][0].char : ' ';
 			}
@@ -230,7 +300,7 @@ var Game = {
 var Animal = {
 	char: '',
 	surroundings: [],
-	MAP_SIZE: Game.MAP_SIZE,
+	MAP_SIZE: Tools.SIZE,
 
 	fight: function(opponent) {
 		return AttackEnum.SUICIDE;
@@ -243,6 +313,7 @@ var Animal = {
 
 var Bear = Object.create(Animal);
 Bear.char = 'B';
+Bear.color = "brown";
 Bear.counter = -1;
 
 Bear.fight = function(opponent) {
@@ -250,10 +321,9 @@ Bear.fight = function(opponent) {
 }
 
 Bear.move = function() {
-	var counter = this.counter;
-	if (++counter == 16)
-		counter = 0;
-	switch (counter / 4) {
+	if (++this.counter == 16)
+		this.counter = 0;
+	switch (Math.floor(this.counter / 4)) {
 		case 0: return MoveEnum.DOWN;
 		case 1: return MoveEnum.RIGHT;
 		case 2: return MoveEnum.UP;
@@ -263,6 +333,7 @@ Bear.move = function() {
 
 var Lion = Object.create(Animal);
 Lion.char = 'L';
+Lion.color = "yellow";
 Lion.toggle = true;
 
 Lion.fight = function(opponent) {
@@ -270,13 +341,13 @@ Lion.fight = function(opponent) {
 }
 
 Lion.move = function() {
-	var toggle = this.toggle;
-	toggle = !toggle;
-	return toggle ? MoveEnum.DOWN : MoveEnum.RIGHT;
+	this.toggle = !this.toggle;
+	return this.toggle ? MoveEnum.DOWN : MoveEnum.RIGHT;
 }
 
 var Stone = Object.create(Animal);
 Stone.char = 'S';
+Stone.color = "gray";
 Stone.fight = function(opponent) {
 	return AttackEnum.ROCK;
 }
@@ -286,6 +357,8 @@ Stone.move = function() {
 
 var Wolf = Object.create(Animal);
 Wolf.char = 'W';
+Wolf.color = "blue";
+
 Wolf.fight = function(opponent) {
 	switch (opponent.char) {
 		case 'B': return AttackEnum.SCISSORS;
@@ -296,17 +369,15 @@ Wolf.fight = function(opponent) {
 }
 Wolf.move = function() {
 	var surroundings = this.surroundings;
-
 	if (surroundings != null) {
-		if (Math.random() < 0.6)
+		if (Math.random() < 0.2)
 			return MoveEnum.HOLD;
-		if (surroundings[1][2] === ' ')
-			return MoveEnum.RIGHT;
-		if (surroundings[0][1] === ' ')
-			return MoveEnum.UP;
-		if (surroundings[1][0] === ' ')
-			return MoveEnum.LEFT;
-		return MoveEnum.DOWN;
+		switch( Math.floor(Math.random() * 4) ) {
+			case 0: return MoveEnum.RIGHT;
+			case 1: return MoveEnum.UP;
+			case 2: return MoveEnum.LEFT;
+			default: MoveEnum.DOWN;
+		}
 	} else {
 		console.error("surroundings is: " + surroundings);
 	}
