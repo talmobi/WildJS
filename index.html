@@ -9,7 +9,18 @@
 		}
 	</style>
 
-	
+
+	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+	<script type="text/javascript" src="http://code.createjs.com/easeljs-0.7.1.min.js"></script>
+
+	<script type="text/javascript" src="Wild.js"></script>
+	<script>
+		var init = function(id) {
+			var canvas = $('#' + id)[0];
+			Game.init(canvas);
+		}
+	</script>
+
 </head>
 
 <body onLoad="init('myCanvas')">

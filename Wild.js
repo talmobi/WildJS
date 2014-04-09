@@ -15,34 +15,98 @@ var MoveEnum = {
 
 var GLOBAL = {
 	SEED: 1,
-	MAP_SIZE: 4
+	MAP_SIZE: 4,
+	stageWidth: 320,
+	stageHeight: 320
+}
+
+var Tools = {
+	createEmptyBoard: function(size) {
+		var arr = [];
+
+		for (var i = 0; i < size; i++) {
+			arr[i] = [];
+			for (var j = 0; j < size; j++) {
+				arr[i][j] = [];
+			}
+		}
+
+		console.log(arr[11][11].length);
+
+		return arr;
+	},
+
+	SIZE: Math.round(Math.sqrt((GLOBAL.MAP_SIZE + 3) * 20)),
 }
 
 var Game = {
-	SIZE: Math.round(Math.sqrt((GLOBAL.MAP_SIZE + 3) * 20)),
-	board: [this.SIZE][this.SIZE][],
+	board: Tools.createEmptyBoard(Tools.SIZE),
 	
 	// easy simple determinstic RNG
 	random: function() {
-		var x = Math.sin(GLOBAL.SEED++) * 10000,
-		return x - Math.floor(x);
+		var x = Math.sin(GLOBAL.SEED++) * 10000;
+		return (x - Math.floor(x));
 	},
 
+	init: function(canvas) {
+		// set canvas size
+		canvas.width = GLOBAL.stageWidth;
+		canvas.height = GLOBAL.stageHeight;
+
+		var stage = new createjs.Stage(canvas);
+		stage.regX = .5;
+		stage.regY = .5;
+
+		var w = GLOBAL.stageWidth;
+		var h = GLOBAL.stageHeight;
+
+		var border = new createjs.Shape();
+		border.snapToPixel = true;
+		border.graphics.setStrokeStyle(1).beginStroke("white").rect(0,0,w,h);
+
+		stage.addChild(border);
+
+		console.log("Board: " + this.board[0][0].length)
+
+		// populate
+		for (var i = 0; i < 4; i++) {
+			switch(i) {
+				case 0:
+					this.populate(Bear, 1);
+				case 1:
+					this.populate(Lion, 1);
+				case 2:
+					this.populate(Wolf, 1);
+				default:
+					this.populate(Stone, 1);
+			}
+		}
+
+		createjs.Ticker.on("tick", this.tick);
+		createjs.Ticker.setFPS(1);
+	},
+
+	tick: function() {
+		Game.iterate();
+		Game.collide();
+	},
 
 	populate: function(species, num) {
 		while (num > 0) {
-			var row = Game.random() * this.SIZE,
-					col = Game.random() *	this.SIZE;
-			if (this.map[row][col].length > 0)
-				continue;
-			this.map[row][col] = species;
+			var row = Math.floor(Game.random() * Tools.SIZE),
+					col = Math.floor(Game.random() * Tools.SIZE);
+					console.log("row: " + row + ", col: " + col);
+			if (this.board[row][col].length < 1)
+				this.board[row][col].push(species);
 			num--;
 		}
 	},
 
 	getArea: function(x, y) { // animal position (x,y)
-		var area = [3][3];
+		var SIZE = Tools.SIZE;
+		var area = new Array(3);
 		for (var i = 0; i < 3; i++) {
+			area[i] = new Array(3);
 			for (var j = 0; j < 3; j++) {
 				var tx = (x + i - 1 + SIZE) % SIZE,
 						ty = (y + j - 1+ SIZE) % SIZE;
@@ -53,13 +117,20 @@ var Game = {
 
 	iterate: function() {
 		// create new board to save changes to
-		var newBoard = [this.SIZE][this.SIZE][];
+		var newBoard = Tools.createEmptyBoard(Tools.SIZE);
+
+		var SIZE = Tools.SIZE;
 
 		// loop through current board and save changes to newBoard
 		for (var i = 0; i < SIZE; i++) {
 			for (var j = 0; j < SIZE; j++) {
-				var animal = this.board[i][j];
-				if (animal != null && animal instanceof Animal) {
+				if (this.board[i][j].length < 1)
+					continue;
+				var animal = this.board[i][j][0];
+				if (animal == null || animal == undefined)
+					continue;
+				if (true) {
+					console.log(animal);
 					// give animal its surroundings
 					animal.surroundings = this.getArea(i,j);
 
@@ -68,14 +139,14 @@ var Game = {
 						case MoveEnum.LEFT:
 							newBoard[(i - 1 + SIZE) % SIZE][j].push(animal);
 							break;
-						case MoveEnum.RIGHT
+						case MoveEnum.RIGHT:
 							newBoard[(i + 1) % SIZE][j].push(animal);
 							break;
 						case MoveEnum.DOWN:
-							newBoard[(i][(j - 1 + SIZE) % SIZE].push(animal);
+							newBoard[i][(j - 1 + SIZE) % SIZE].push(animal);
 							break;
 						case MoveEnum.UP:
-							newBoard[(i][(j + 1) % SIZE].push(animal);
+							newBoard[i][(j + 1) % SIZE].push(animal);
 							break;
 						default:
 							newBoard[i][j].push(animal);
@@ -85,7 +156,7 @@ var Game = {
 		} // for loop
 
 		// update the current board to reflect the changes
-		this.board = newBoard;
+		board = newBoard;
 	},
 
 	// check for collisions, collisions will trigger fights
@@ -141,8 +212,8 @@ var Game = {
 
 var Animal = {
 	char: '',
-	surroundings: [][],
-	MAP_SIZE: Wild.MAP_SIZE,
+	surroundings: [],
+	MAP_SIZE: Game.MAP_SIZE,
 
 	fight: function(opponent) {
 		return AttackEnum.SUICIDE;
