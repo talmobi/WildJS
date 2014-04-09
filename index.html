@@ -2,13 +2,17 @@
 
 <head>
 	<title>Title</title>
-	<style type="text/css">
+	<!-- Latest compiled and minified CSS -->
+  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+
+  <style type="text/css">
 		body {
 			background-color: #222;
 			color:	#EEE;
 		}
 	</style>
-
 
 	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
 	<script type="text/javascript" src="http://code.createjs.com/easeljs-0.7.1.min.js"></script>
@@ -24,11 +28,23 @@
 </head>
 
 <body onLoad="init('myCanvas')">
-	<h1>Title</h1>
-	<div id="container">
-		<canvas id="myCanvas">
-		</canvas>
-	</div>
+	<h1 class="container">Title</h1>
+	<div class="container">
+
+
+		<div class="container row">
+			<canvas id="myCanvas" class="col-md-4">
+			</canvas>
+			<div id="ui" class="input-group">
+				<input type="checkbox">Hide Drawing
+				<input class="form-control" type="text" placeholder="rounds">
+				<input class="Form-control" type="text" placeholder="iterations per second (FPS)">
+			</div>
+		</div>
+
+
+
+	</div> <!-- container -->
 </body>
 
 </html>

@@ -16,7 +16,7 @@ var MoveEnum = {
 var stage;
 
 var GLOBAL = {
-	SEED: 1,
+	SEED: 2,
 	FPS: 10,
 	SUBMISSIONS: 1,
 	stageWidth: 320,
@@ -26,14 +26,12 @@ var GLOBAL = {
 var Tools = {
 	createEmptyBoard: function(size) {
 		var arr = [];
-
 		for (var i = 0; i < size; i++) {
 			arr[i] = [];
 			for (var j = 0; j < size; j++) {
 				arr[i][j] = [];
 			}
 		}
-
 		return arr;
 	},
 
@@ -74,7 +72,7 @@ var Game = {
 		return (x - Math.floor(x));
 	},
 
-	init: function(canvas) {
+	init: function(canvas, fps) {
 		// set canvas size
 		canvas.width = GLOBAL.stageWidth;
 		canvas.height = GLOBAL.stageHeight;
@@ -110,7 +108,7 @@ var Game = {
 		}
 
 		createjs.Ticker.on("tick", this.tick);
-		createjs.Ticker.setFPS( GLOBAL.FPS );
+		createjs.Ticker.setFPS( Math.min( 100, fps || GLOBAL.FPS) );
 	},
 
 	printBoard: function() {
@@ -368,8 +366,8 @@ Wolf.fight = function(opponent) {
 	}
 }
 Wolf.move = function() {
-	var surroundings = this.surroundings;
-	if (surroundings != null) {
+	var surr = this.surroundings;
+	if (surr != null) {
 		if (Math.random() < 0.2)
 			return MoveEnum.HOLD;
 		switch( Math.floor(Math.random() * 4) ) {
@@ -379,7 +377,7 @@ Wolf.move = function() {
 			default: MoveEnum.DOWN;
 		}
 	} else {
-		console.error("surroundings is: " + surroundings);
+		return MoveEnum.HOLD;
 	}
 }
 
