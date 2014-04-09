@@ -139,14 +139,6 @@ var Game = {
 
 }
 
-var Board = {
-	SIZE: ,
-	map: [][],
-
-	// populate / initialize the map
-	
-}
-
 var Animal = {
 	char: '',
 	surroundings: [][],
