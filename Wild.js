@@ -15,7 +15,7 @@ var MoveEnum = {
 
 var GLOBAL = {
 	SEED: 1,
-	MAP_SIZE: 4,
+	MAP_SIZE: 1,
 	stageWidth: 320,
 	stageHeight: 320
 }
@@ -30,8 +30,6 @@ var Tools = {
 				arr[i][j] = [];
 			}
 		}
-
-		console.log(arr[11][11].length);
 
 		return arr;
 	},
@@ -86,9 +84,27 @@ var Game = {
 		createjs.Ticker.setFPS(1);
 	},
 
+	printBoard: function() {
+		var size = Tools.SIZE;
+
+		// flipped ( print horizontal first )
+		for (var j = 0; j < size; j++) {
+			str = "";
+			for (var i = 0; i < size; i++) {
+				var animal = this.board[i][j][0];
+				if (animal != null)
+					str += this.board[i][j][0].char;
+				else
+					str += '.';
+			}
+			console.log(str);
+		}
+	},
+
 	tick: function() {
 		Game.iterate();
 		Game.collide();
+		Game.printBoard();
 	},
 
 	populate: function(species, num) {
@@ -110,9 +126,11 @@ var Game = {
 			for (var j = 0; j < 3; j++) {
 				var tx = (x + i - 1 + SIZE) % SIZE,
 						ty = (y + j - 1+ SIZE) % SIZE;
-				area[i][j] = this.board[tx][ty][0].char || ' ';
+				var animal = this.board[tx][ty][0];
+				area[i][j] = animal != null ? this.board[tx][ty][0].char : ' ';
 			}
 		}
+		return area;
 	},
 
 	iterate: function() {
@@ -127,10 +145,7 @@ var Game = {
 				if (this.board[i][j].length < 1)
 					continue;
 				var animal = this.board[i][j][0];
-				if (animal == null || animal == undefined)
-					continue;
-				if (true) {
-					console.log(animal);
+				if (animal != null) {
 					// give animal its surroundings
 					animal.surroundings = this.getArea(i,j);
 
@@ -156,11 +171,13 @@ var Game = {
 		} // for loop
 
 		// update the current board to reflect the changes
-		board = newBoard;
+		this.board = newBoard;
 	},
 
 	// check for collisions, collisions will trigger fights
 	collide: function() {
+		var SIZE = Tools.SIZE;
+
 		for (var i = 0; i < SIZE; i++) {
 			for (var j = 0; j < SIZE; j++) {
 
@@ -169,9 +186,9 @@ var Game = {
 
 					// grab two unique indexes at random
 					var r1, r2;
-					r1 = Game.random() * cell.length;
+					r1 = Math.floor(Game.random() * cell.length);
 					do {
-						r2 = Game.random() * cell.length;
+						r2 = Math.floor(Game.random() * cell.length);
 					} while (r1 === r2)
 
 					// get the corresponding animals
@@ -189,13 +206,13 @@ var Game = {
 					} else {
 						switch (atk1) {
 							case AttackEnum.PAPER:
-								cell.splice( atk2 === AttackEnum.SCISSORS ? r1 : r2 );
+								cell.splice( atk2 === AttackEnum.SCISSORS ? r1 : r2, 1);
 								break;
 							case AttackEnum.ROCK:
-								cell.splice( atk2 === AttackEnum.PAPER ? r1 : r2 );
+								cell.splice( atk2 === AttackEnum.PAPER ? r1 : r2, 1);
 								break;
 							case AttackEnum.SCISSORS:
-								cell.splice( atk2 === AttackEnum.ROCK ? r1 : r2 );
+								cell.splice( atk2 === AttackEnum.ROCK ? r1 : r2, 1);
 								break;
 							default: // no matches (error)
 								// kill the animal that gave unrecognized attack
@@ -233,6 +250,7 @@ Bear.fight = function(opponent) {
 }
 
 Bear.move = function() {
+	var counter = this.counter;
 	if (++counter == 16)
 		counter = 0;
 	switch (counter / 4) {
@@ -252,6 +270,7 @@ Lion.fight = function(opponent) {
 }
 
 Lion.move = function() {
+	var toggle = this.toggle;
 	toggle = !toggle;
 	return toggle ? MoveEnum.DOWN : MoveEnum.RIGHT;
 }
@@ -276,12 +295,20 @@ Wolf.fight = function(opponent) {
 	}
 }
 Wolf.move = function() {
-	if (surroundings[0][1] == null)
-		return MoveEnum.UP;
-	if (surroundings[1][2] == null)
-		return MoveEnum.RIGHT;
-	if (surroundings[1][0] == null)
-		return MoveEnum.LEFT;
-	return Move.DOWN;
+	var surroundings = this.surroundings;
+
+	if (surroundings != null) {
+		if (Math.random() < 0.6)
+			return MoveEnum.HOLD;
+		if (surroundings[1][2] === ' ')
+			return MoveEnum.RIGHT;
+		if (surroundings[0][1] === ' ')
+			return MoveEnum.UP;
+		if (surroundings[1][0] === ' ')
+			return MoveEnum.LEFT;
+		return MoveEnum.DOWN;
+	} else {
+		console.error("surroundings is: " + surroundings);
+	}
 }
 
