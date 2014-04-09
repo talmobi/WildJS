@@ -40,8 +40,15 @@ var Game = {
 		}
 	},
 
-	getArea: function() {
-
+	getArea: function(x, y) { // animal position (x,y)
+		var area = [3][3];
+		for (var i = 0; i < 3; i++) {
+			for (var j = 0; j < 3; j++) {
+				var tx = (x + i - 1 + SIZE) % SIZE,
+						ty = (y + j - 1+ SIZE) % SIZE;
+				area[i][j] = this.board[tx][ty][0].char || ' ';
+			}
+		}
 	},
 
 	iterate: function() {
@@ -125,7 +132,6 @@ var Game = {
 						}
 					}
 				}
-
 			} // for loop
 		} // for loop
 	}
