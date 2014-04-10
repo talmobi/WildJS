@@ -710,13 +710,13 @@ StoneGuardianWolf.move = function() {
 		}
 	}
 
-	if (i < 1 && y === 1)
+	if (x === 0 && y === 1)
 		return MoveEnum.LEFT;
-	if (i > 1 && y === 1)
+	if (x === 2 && y === 1)
 		return MoveEnum.RIGHT;
-	if (i === 1 && y < 1)
+	if (x === 1 && y === 0)
 		return MoveEnum.UP;
-	if (i === 1 && y > 1)
+	if (x === 1 && y === 2)
 		return MoveEnum.DOWN;
 
 	return MoveEnum.HOLD;
