@@ -1,3 +1,8 @@
+/**
+	* JS port of http://codegolf.stackexchange.com/questions/25347/survival-game-create-your-wolf
+	*	@author @hannyajin
+	*/
+
 var AttackEnum = {
 	ROCK: 'R',
 	PAPER: 'P',
@@ -18,14 +23,14 @@ var stage;
 var GLOBAL = {
 	SEED: 2,
 	FPS: 10,
-	SIM_SPEED: 25, // iterations per tick
-	SIM_DELAY: 1, // tick delay (ms)
+	SIM_SPEED: 1, // iterations per tick
+	SIM_DELAY: 33, // tick delay (ms)
 	SUBMISSIONS: 3,
 	stageWidth: 320,
 	stageHeight: 320,
 	lock: false,
 	rounds: 100,
-	iterations: 1000,
+	iterations: 100,
 	swap: true
 }
 
@@ -52,7 +57,7 @@ var DATA = {
 	stones: 0,
 
 	reset: function() {
-			DATA.rounds = 0;
+			//DATA.rounds = 0;
 			DATA.wolves = 0;
 			DATA.bears = 0;
 			DATA.lions = 0;
@@ -92,7 +97,7 @@ var DATA = {
 			for (var j = 0; j < SIZE; j++) {
 				if (board[i][j].length < 1) // empty
 					continue;
-				var animal = board[i][j][0];
+				var animal = board[i][j][0] || null;
 				if (animal != null) {
 					// found enimal
 					switch (animal.char) {
@@ -113,14 +118,16 @@ var DATA = {
 			}	// for loop
 		} // for loop
 
+		console.log("Wolves on board: " + tw);
+
 		DATA.wolves += tw;
 		DATA.bears += tb;
 		DATA.lions += tl;
 		DATA.stones += ts;
+
+		console.log("Inserted, rounds: " + DATA.rounds);
 	}
 }
-
-
 
 var newBorder = function(x, y, w, h, color) {
 	if (!color)
@@ -171,6 +178,9 @@ var Game = {
 		if (!GLOBAL.lock) {
 			GLOBAL.lock = true;
 
+			// start from empty board
+			Game.board = Tools.createEmptyBoard(Tools.SIZE);
+
 			var w = GLOBAL.stageWidth;
 			var h = GLOBAL.stageHeight;
 
@@ -185,12 +195,16 @@ var Game = {
 				switch(i) {
 					case 0:
 						this.populate(Bear, 100);
+						break;
 					case 1:
 						this.populate(Lion, 100);
+						break;
 					case 2:
-						this.populate(Wolf, 100);
+						this.populate(ClaireWolf, 100);
+						break;
 					default:
 						this.populate(Stone, 100);
+						break;
 				}
 			}
 
@@ -225,8 +239,6 @@ var Game = {
 			canvas.width = GLOBAL.stageWidth;
 			canvas.height = GLOBAL.stageHeight;
 
-			
-
 			stage = new createjs.Stage(canvas);
 			stage.regX = .5;
 			stage.regY = .5;
@@ -243,12 +255,16 @@ var Game = {
 				switch(i) {
 					case 0:
 						Game.populate(Bear, 100);
+						break;
 					case 1:
 						Game.populate(Lion, 100);
+						break;
 					case 2:
-						Game.populate(Wolf, 100);
+						Game.populate(ClaireWolf, 100);
+						break;
 					default:
 						Game.populate(Stone, 100);
+						break;
 				}
 			}
 
@@ -440,10 +456,10 @@ var Game = {
 							newBoard[(i + 1) % SIZE][j].push(animal);
 							break;
 						case MoveEnum.DOWN:
-							newBoard[i][(j - 1 + SIZE) % SIZE].push(animal);
+							newBoard[i][(j + 1) % SIZE].push(animal);
 							break;
 						case MoveEnum.UP:
-							newBoard[i][(j + 1) % SIZE].push(animal);
+							newBoard[i][(j - 1 + SIZE) % SIZE].push(animal);
 							break;
 						default:
 							newBoard[i][j].push(animal);
@@ -525,7 +541,7 @@ var Animal = {
 
 var Bear = Object.create(Animal);
 Bear.char = 'B';
-Bear.color = "brown";
+Bear.color = "green";
 Bear.counter = -1;
 
 Bear.fight = function(opponent) {
@@ -569,7 +585,7 @@ Stone.move = function() {
 
 var Wolf = Object.create(Animal);
 Wolf.char = 'W';
-Wolf.color = "cyan";
+Wolf.color = "blue";
 
 Wolf.fight = function(opponent) {
 	switch (opponent.char) {
@@ -595,6 +611,97 @@ Wolf.move = function() {
 	}
 }
 
-var restart = function() {
-	Game.restart();
+// my wolf
+var ClaireWolf = Object.create(Wolf);
+ClaireWolf.color = "#7f1a1a";
+
+ClaireWolf.fight = function(opponent) {
+	switch (opponent.char) {
+		case 'B': return AttackEnum.SCISSORS;
+		case 'L': return AttackEnum.SCISSORS;
+		case 'S': return AttackEnum.PAPER;
+		case 'W':
+			var n = Math.floor(Math.random() * 3);
+			if (n < 1) return AttackEnum.PAPER;
+			if (n < 2) return AttackEnum.ROCK;
+			return AttackEnum.SCISSORS;
+	}
 }
+
+ClaireWolf.move = function() {
+	var surr = this.surroundings;
+
+	var clairvoyance = [];
+	for (var i = 0; i < 3; i++)
+		clairvoyance[i] = [0, 0, 0];
+
+	for (var i = 0; i < 3; i++) {
+		for (var j = 0; j < 3; j++) {
+			switch (surr[i][j]) {
+				case 'L':
+					if (i < 2)
+						clairvoyance[i + 1][j]  += 5;
+					if (j < 2)
+						clairvoyance[i][j + 1] += 5;
+					break;
+
+				case 'S':
+					clairvoyance[i][j] += 1;
+					break;
+
+				case 'B':
+					var m = 1;
+					if (i > 0)
+						clairvoyance[i - 1][j] += m;
+					if (j > 0)
+						clairvoyance[i][j - 1] += m;
+					if (i < 2)
+						clairvoyance[i + 1][j] += m;
+					if (j < 2)
+						clairvoyance[i][j + 1] += m;
+					break;
+
+				case 'W':
+					var m = 3;
+					if (i > 0)
+						clairvoyance[i - 1][j] += m;
+					if (j > 0)
+						clairvoyance[i][j - 1] += m;
+					if (i < 2)
+						clairvoyance[i + 1][j] += m;
+					if (j < 2)
+						clairvoyance[i][j + 1] += m;
+					break;
+
+				default:
+					clairvoyance[i][j] += 0;
+			}
+		} // for loop
+	} // for loop
+
+	var size = 0;
+	var x = 1;
+	var y = 1;
+
+	for (var i = 0; i < 3; i++) {
+		for (var j = 0; j < 3; j++) {
+			var tmp = clairvoyance[i][j] || 0;
+			if (tmp < size) {
+				size = tmp;
+				x = i;
+				y = j;
+			}
+		} // for loop
+	} // for loop
+
+	if (x < 1)
+		return MoveEnum.LEFT;
+	if (x > 1)
+		return MoveEnum.RIGHT;
+	if (y < 1)
+		return MoveEnum.UP;
+	if (y > 1)
+		return MoveEnum.DOWN;
+	return MoveEnum.HOLD;
+
+} // move()
