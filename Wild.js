@@ -22,15 +22,15 @@ var stage;
 
 var GLOBAL = {
 	SEED: 2,
-	FPS: 20,
-	SIM_SPEED: 25, // iterations per tick
-	SIM_DELAY: 1, // tick delay (ms)
+	FPS: 60,
+	SIM_SPEED: 5, // iterations per tick
+	SIM_DELAY: 10, // tick delay (ms)
 	SUBMISSIONS: 1,
 	stageWidth: 320,
 	stageHeight: 320,
 	lock: false,
-	rounds: 100,
-	iterations: 250,
+	rounds: 50,
+	iterations: 200,
 	swap: true
 }
 
@@ -644,6 +644,9 @@ StoneGuardianWolf.move = function() {
 
 	for (var i = 0; i < 3; i++) {
 		for (var j = 0; j < 3; j++) {
+			if (j === 2)
+				clairvoyance[i][j] -= 5;
+
 			switch (surr[i][j]) {
 				case 'L':
 					if (i < 1 && j < 1) {
@@ -681,7 +684,8 @@ StoneGuardianWolf.move = function() {
 					// skip self
 					if (i === 1 && j === 1)
 						continue;
-					var m = 3; // avoid wolves
+					var m = 25; // avoid wolves
+					clairvoyance[i][j] += m*3;
 					if (i < 2)
 						clairvoyance[i+1][j] += m;
 					if (j < 2)
@@ -716,9 +720,15 @@ StoneGuardianWolf.move = function() {
 	}
 
 	if (seeNoStone) { // Find a pet stone! :3
-		if (Math.random() < .5)
-			return MoveEnum.RIGHT;
-		return MoveEnum.DOWN;
+		if (Math.random() < .5) {
+			// try move right
+			if (clairvoyance[2][1] < 45)
+				return MoveEnum.RIGHT;
+		} 
+
+		// try down instead
+		if (clairvoyance[1][2] < 45)
+			return MoveEnum.DOWN;
 	}
 
 	if (x === 0 && y === 1)
