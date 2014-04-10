@@ -12,35 +12,48 @@
 			background-color: #222;
 			color:	#EEE;
 		}
+
+		.input-group {
+			color: #222;
+		}
 	</style>
 
 	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
 	<script type="text/javascript" src="http://code.createjs.com/easeljs-0.7.1.min.js"></script>
 	<script type="text/javascript" src="info.js"></script>
-
 	<script type="text/javascript" src="Wild.js"></script>
+
 	<script>
+		var b = true;
+
 		var init = function(id) {
-			var canvas = $('#' + id)[0];
-			Game.init(canvas);
+			if (b) {
+				b = false;
+				var canvas = $('#' + id)[0];
+
+				Game.stop();
+				Game.init(canvas);
+
+				setTimeout(function() {  b = true; }, 500);
+			}
 		}
 	</script>
 
 </head>
 
-<body onLoad="init('myCanvas')">
+<body>
 	<h1 class="container">Title</h1>
 	<div class="container">
 
 
 		<div id="container" class="container row">
-			<canvas id="myCanvas" class="col-md-4">
+			<canvas id="myCanvas" class="col-md-6 col-sm-6">
 			</canvas>
-			<div id="ui" class="input-group">
+			<div id="ui" class="input-group col-md-6 col-sm-6">
 				<ul class="list-group">
 					<input class="list-group-item" type="text" placeholder="rounds">
 					<input class="list-group-item" type="text" placeholder="iterations">
-					<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="restart()">Simulate</button>
+					<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="init('myCanvas')">Simulate</button>
 				</ul>
 			</div>
 		</div>

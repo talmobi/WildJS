@@ -15,6 +15,35 @@ var MoveEnum = {
 
 var stage;
 
+var GLOBAL = {
+	SEED: 2,
+	FPS: 10,
+	SIM_SPEED: 25, // iterations per second
+	SIM_DELAY: 1,
+	SUBMISSIONS: 5,
+	stageWidth: 320,
+	stageHeight: 320,
+	lock: false,
+	rounds: 100,
+	iterations: 1000,
+	swap: true
+}
+
+var Tools = {
+	createEmptyBoard: function(size) {
+		var arr = [];
+		for (var i = 0; i < size; i++) {
+			arr[i] = [];
+			for (var j = 0; j < size; j++) {
+				arr[i][j] = [];
+			}
+		}
+		return arr;
+	},
+
+	SIZE: Math.round(Math.sqrt((GLOBAL.SUBMISSIONS + 3)) * 20)
+}
+
 var DATA = {
 	rounds: 0,
 	wolves: 0,
@@ -30,11 +59,17 @@ var DATA = {
 			DATA.stones = 0;
 	},
 
+	stringAverage: function() {
+		var str = "";
+		str += "Wolves avg: " + ((DATA.wolves / DATA.rounds) || 0).toFixed(1) + "\n";
+		str += "Bears avg: " + ((DATA.bears / DATA.rounds) || 0).toFixed(1) + "\n";
+		str += "Lions avg: " + ((DATA.lions / DATA.rounds) || 0).toFixed(1) + "\n";
+		str += "Stones avg: " + ((DATA.stones / DATA.rounds) || 0).toFixed(1) + "\n";
+		return str;
+	},
+
 	printAvarage: function() {
-		console.log("Wolves avg: " + DATA.wolves / DATA.rounds);
-		console.log("Bears avg: " + DATA.bears / DATA.rounds);
-		console.log("Lions avg: " + DATA.lions / DATA.rounds);
-		console.log("Stones avg: " + DATA.stones / DATA.rounds);
+		console.log(DATA.stringAverage());
 	},
 
 	insertData: function(board) {
@@ -81,34 +116,7 @@ var DATA = {
 	}
 }
 
-var GLOBAL = {
-	SEED: 2,
-	FPS: 10,
-	SIM_SPEED: 25, // iterations per second (simulation speed)
-	SIM_DELAY: 1,
-	SUBMISSIONS: 1,
-	stageWidth: 320,
-	stageHeight: 320,
-	lock: false,
-	rounds: 100,
-	iterations: 1000,
-	swap: true
-}
 
-var Tools = {
-	createEmptyBoard: function(size) {
-		var arr = [];
-		for (var i = 0; i < size; i++) {
-			arr[i] = [];
-			for (var j = 0; j < size; j++) {
-				arr[i][j] = [];
-			}
-		}
-		return arr;
-	},
-
-	SIZE: Math.round(Math.sqrt((GLOBAL.SUBMISSIONS + 3)) * 20)
-}
 
 var newBorder = function(x, y, w, h, color) {
 	if (!color)
@@ -192,57 +200,64 @@ var Game = {
 	},
 
 	init: function(canvas, fps) {
-		console.log("init!!");
-		$('#container').append( info.domElement );
 
-		if (!canvas) {
-			console.error("Provide the canvas element id to draw on.");
-			return;
-		}
+		setTimeout(function() {
 
-		this.rounds = 0;
-		this.iterations = 0;
-		this.isRunning = true;
+			info.setAll( 'Starting...' );
 
-		// reset data
-		DATA.reset();
+			console.log("Starting...");
+			$('#container').append( info.domElement );
 
-		// set canvas size
-		canvas.width = GLOBAL.stageWidth;
-		canvas.height = GLOBAL.stageHeight;
-
-		
-
-		stage = new createjs.Stage(canvas);
-		stage.regX = .5;
-		stage.regY = .5;
-
-		var w = GLOBAL.stageWidth;
-		var h = GLOBAL.stageHeight;
-
-		stage.addChild(newBorder(1,1,w-1,h-1));
-
-		stage.update();
-
-		// populate
-		for (var i = 0; i < 4; i++) {
-			switch(i) {
-				case 0:
-					this.populate(Bear, 100);
-				case 1:
-					this.populate(Lion, 100);
-				case 2:
-					this.populate(Wolf, 100);
-				default:
-					this.populate(Stone, 100);
+			if (!canvas) {
+				console.error("Provide the canvas element id to draw on.");
+				return;
 			}
-		}
 
-		setTimeout(this.simulate, 400);
+			Game.rounds = 0;
+			Game.iterations = 0;
+			Game.isRunning = true;
 
-		createjs.Ticker.on("tick", this.tick);
-		createjs.Ticker.setFPS( GLOBAL.FPS );
-	},
+			// reset data
+			DATA.reset();
+
+			// set canvas size
+			canvas.width = GLOBAL.stageWidth;
+			canvas.height = GLOBAL.stageHeight;
+
+			
+
+			stage = new createjs.Stage(canvas);
+			stage.regX = .5;
+			stage.regY = .5;
+
+			var w = GLOBAL.stageWidth;
+			var h = GLOBAL.stageHeight;
+
+			stage.addChild(newBorder(1,1,w-1,h-1));
+
+			stage.update();
+
+			// populate
+			for (var i = 0; i < 4; i++) {
+				switch(i) {
+					case 0:
+						Game.populate(Bear, 100);
+					case 1:
+						Game.populate(Lion, 100);
+					case 2:
+						Game.populate(Wolf, 100);
+					default:
+						Game.populate(Stone, 100);
+				}
+			}
+
+			setTimeout(Game.simulate, 400);
+
+			createjs.Ticker.on("tick", Game.tick);
+			createjs.Ticker.setFPS( GLOBAL.FPS );
+
+		}, Game.isRunning ? 1000 : 500); // setTimeout
+	}, // init
 
 	printBoard: function() {
 		var size = Tools.SIZE;
@@ -296,6 +311,11 @@ var Game = {
 		stage.addChild(newBorder(1,1,GLOBAL.stageWidth-1,GLOBAL.stageHeight-1));
 	},
 
+	stop: function() {
+		Game.isRunning = false;
+		info.setAll("Stopped.");
+	},
+
 	simulate: function() {
 		if (!Game.isRunning) {
 			console.log("Game isn't running");
@@ -320,12 +340,22 @@ var Game = {
 				DATA.insertData( Game.board );
 				DATA.printAvarage();
 
+				// display averages after round
+				info.setInfo2(DATA.stringAverage());
+
 				// check if done
 				if (!(Game.rounds <= GLOBAL.rounds)) {
-					Game.iterations = 0;
+					Game.isRunning = false;
+					console.log(Wolf);
 					console.log("DONE!")
+
+					info.appendInfo("\nDone!");
+					// switch to average view when done.
+					setTimeout(function() { if (!Game.isRunning) info.setMode(1); }, 800);
+
 					Game.drawBoard();
 					stage.update();
+
 					return;
 				}
 
