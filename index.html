@@ -16,6 +16,7 @@
 
 	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
 	<script type="text/javascript" src="http://code.createjs.com/easeljs-0.7.1.min.js"></script>
+	<script type="text/javascript" src="info.js"></script>
 
 	<script type="text/javascript" src="Wild.js"></script>
 	<script>
@@ -32,13 +33,15 @@
 	<div class="container">
 
 
-		<div class="container row">
+		<div id="container" class="container row">
 			<canvas id="myCanvas" class="col-md-4">
 			</canvas>
 			<div id="ui" class="input-group">
-				<input type="checkbox">Hide Drawing
-				<input class="form-control" type="text" placeholder="rounds">
-				<input class="Form-control" type="text" placeholder="iterations per second (FPS)">
+				<ul class="list-group">
+					<input class="list-group-item" type="text" placeholder="rounds">
+					<input class="list-group-item" type="text" placeholder="iterations">
+					<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="restart()">Simulate</button>
+				</ul>
 			</div>
 		</div>
 

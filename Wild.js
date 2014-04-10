@@ -15,12 +15,84 @@ var MoveEnum = {
 
 var stage;
 
+var DATA = {
+	rounds: 0,
+	wolves: 0,
+	bears: 0,
+	lions: 0,
+	stones: 0,
+
+	reset: function() {
+			DATA.rounds = 0;
+			DATA.wolves = 0;
+			DATA.bears = 0;
+			DATA.lions = 0;
+			DATA.stones = 0;
+	},
+
+	printAvarage: function() {
+		console.log("Wolves avg: " + DATA.wolves / DATA.rounds);
+		console.log("Bears avg: " + DATA.bears / DATA.rounds);
+		console.log("Lions avg: " + DATA.lions / DATA.rounds);
+		console.log("Stones avg: " + DATA.stones / DATA.rounds);
+	},
+
+	insertData: function(board) {
+		DATA.rounds++;
+
+		// temp animals
+		var tw = 0,
+				tb = 0,
+				tl = 0,
+				ts = 0;
+
+		var SIZE = board[0].length;
+
+		// loop through current board and save animal data
+		for (var i = 0; i < SIZE; i++) {
+			for (var j = 0; j < SIZE; j++) {
+				if (board[i][j].length < 1) // empty
+					continue;
+				var animal = board[i][j][0];
+				if (animal != null) {
+					// found enimal
+					switch (animal.char) {
+						case 'W':
+							tw++;
+							break;
+						case 'B':
+							tb++;
+							break;
+						case 'L':
+							tl++;
+							break;
+						case 'S':
+							ts++;
+							break;
+					}
+				}
+			}	// for loop
+		} // for loop
+
+		DATA.wolves += tw;
+		DATA.bears += tb;
+		DATA.lions += tl;
+		DATA.stones += ts;
+	}
+}
+
 var GLOBAL = {
 	SEED: 2,
 	FPS: 10,
+	SIM_SPEED: 25, // iterations per second (simulation speed)
+	SIM_DELAY: 1,
 	SUBMISSIONS: 1,
 	stageWidth: 320,
-	stageHeight: 320
+	stageHeight: 320,
+	lock: false,
+	rounds: 100,
+	iterations: 1000,
+	swap: true
 }
 
 var Tools = {
@@ -62,25 +134,84 @@ var newBlock = function(x, y, w, h, color) {
 	return border;
 }
 
+// info (modified of stats.js - https://github.com/mrdoob/stats.js)
+var info = new Info();
+info.setMode(0);
+info.domElement.style.position = 'absolute';
+info.domElement.style.left = '75px';
+info.domElement.style.top = '75px';
+
+
 var Game = {
 	board: Tools.createEmptyBoard(Tools.SIZE),
+	rounds: GLOBAL.rounds,
+	iterations: GLOBAL.iterations,
+	isRunning: false,
 	
 	// easy simple determinstic RNG
 	random: function() {
 		return Math.random();
-		var x = Math.sin(GLOBAL.SEED++) * 11111;
-		return (x - Math.floor(x));
+		/*var x = Math.sin(GLOBAL.SEED++) * 11111;
+		return (x - Math.floor(x));*/
+	},
+
+	restart: function() {
+		if (!GLOBAL.lock) {
+			GLOBAL.lock = true;
+
+			// reset data
+			DATA.reset();
+
+			var w = GLOBAL.stageWidth;
+			var h = GLOBAL.stageHeight;
+
+			stage.removeAllChildren();
+
+			stage.addChild(newBorder(1,1,w-1,h-1));
+
+			stage.update();
+
+			// populate
+			for (var i = 0; i < 4; i++) {
+				switch(i) {
+					case 0:
+						this.populate(Bear, 100);
+					case 1:
+						this.populate(Lion, 100);
+					case 2:
+						this.populate(Wolf, 100);
+					default:
+						this.populate(Stone, 100);
+				}
+			}
+
+			setTimeout(function(){
+				GLOBAL.lock = false;
+			}, 500);
+		}
 	},
 
 	init: function(canvas, fps) {
-		// set canvas size
-		canvas.width = GLOBAL.stageWidth;
-		canvas.height = GLOBAL.stageHeight;
+		console.log("init!!");
+		$('#container').append( info.domElement );
 
 		if (!canvas) {
 			console.error("Provide the canvas element id to draw on.");
 			return;
 		}
+
+		this.rounds = 0;
+		this.iterations = 0;
+		this.isRunning = true;
+
+		// reset data
+		DATA.reset();
+
+		// set canvas size
+		canvas.width = GLOBAL.stageWidth;
+		canvas.height = GLOBAL.stageHeight;
+
+		
 
 		stage = new createjs.Stage(canvas);
 		stage.regX = .5;
@@ -107,8 +238,10 @@ var Game = {
 			}
 		}
 
+		setTimeout(this.simulate, 400);
+
 		createjs.Ticker.on("tick", this.tick);
-		createjs.Ticker.setFPS( Math.min( 100, fps || GLOBAL.FPS) );
+		createjs.Ticker.setFPS( GLOBAL.FPS );
 	},
 
 	printBoard: function() {
@@ -163,14 +296,58 @@ var Game = {
 		stage.addChild(newBorder(1,1,GLOBAL.stageWidth-1,GLOBAL.stageHeight-1));
 	},
 
+	simulate: function() {
+		if (!Game.isRunning) {
+			console.log("Game isn't running");
+			return;
+		}
+
+		info.setInfo1('Iterations: ' + Game.iterations + "\nRounds: " + Game.rounds);
+
+		var limit = Math.min(GLOBAL.SIM_SPEED, 50);
+		for (var i = 0; i < limit; i++) {
+
+			if (Game.iterations < GLOBAL.iterations) {			
+				Game.iterate();
+				Game.collide();
+				Game.iterations++;
+			} else {
+
+				Game.iterations = 0;
+				//Game.rounds++;
+				console.log("round: " + Game.rounds++ + " Complete.")
+
+				DATA.insertData( Game.board );
+				DATA.printAvarage();
+
+				// check if done
+				if (!(Game.rounds <= GLOBAL.rounds)) {
+					Game.iterations = 0;
+					console.log("DONE!")
+					Game.drawBoard();
+					stage.update();
+					return;
+				}
+
+				Game.restart();
+				Game.drawBoard();
+				stage.update();
+			}
+
+		}	// for loop
+
+		// continue to next step
+		setTimeout( Game.simulate, Math.max(1, GLOBAL.SIM_DELAY));
+	},
+
 	tick: function() {
-		Game.iterate();
-		Game.collide();
-		
-		
-		Game.drawBoard();
 		// Game.printBoard();
-		stage.update();
+		//statssetinfo.begin();
+		if (this.getFPS() < 100) {
+			Game.drawBoard();
+			stage.update();
+		}
+		//stats.end();
 	},
 
 	populate: function(species, num) {
@@ -381,3 +558,6 @@ Wolf.move = function() {
 	}
 }
 
+var restart = function() {
+	Game.restart();
+}
