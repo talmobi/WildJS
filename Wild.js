@@ -623,7 +623,8 @@ StoneGuardianWolf.fight = function(opponent) {
 		case 'L': 
 			console.log("FIGHTING LION");
 			return AttackEnum.SCISSORS;
-		case 'S': return AttackEnum.PAPER;
+		case 'S': // A motherly saccrifice
+			return AttackEnum.SUICIDE;
 		case 'W':
 			var n = Math.floor(Math.random() * 3);
 			if (n < 1) return AttackEnum.PAPER;
@@ -638,6 +639,8 @@ StoneGuardianWolf.move = function() {
 	var clairvoyance = [];
 	for (var i = 0; i < 3; i++)
 		clairvoyance[i] = [1, 1, 1];
+
+	var seeNoStone = true;
 
 	for (var i = 0; i < 3; i++) {
 		for (var j = 0; j < 3; j++) {
@@ -658,15 +661,17 @@ StoneGuardianWolf.move = function() {
 					break;
 
 				case 'S': // seek stones for protection
-					clairvoyance[i][j] += 0; // avoid destroying stones
+					seeNoStone = false;
+
+					clairvoyance[i][j] += 999; // Only hugs!
 					if (i < 2)
-						clairvoyance[i+1][j] -= 1;
+						clairvoyance[i+1][j] -= 10;
 					if (j < 2)
-						clairvoyance[i][j+1] -= 1;
+						clairvoyance[i][j+1] -= 10;
 					if (i > 0)
-						clairvoyance[i-1][j] -= 1;
+						clairvoyance[i-1][j] -= 10;
 					if (j > 0)
-						clairvoyance[i][j-1] -= 1;
+						clairvoyance[i][j-1] -= 10;
 					break;
 
 				case 'B': // ignore bears
@@ -708,6 +713,12 @@ StoneGuardianWolf.move = function() {
 				y = j;
 			}
 		}
+	}
+
+	if (seeNoStone) { // Find a pet stone! :3
+		if (Math.random() < .5)
+			return MoveEnum.RIGHT;
+		return MoveEnum.DOWN;
 	}
 
 	if (x === 0 && y === 1)
