@@ -702,7 +702,7 @@ StoneGuardianWolf.move = function() {
 			if (i != 1 || j != 1)
 				continue;
 			var tmp = clairvoyance[i][j];
-			if (tmp = size) {
+			if (tmp < size) {
 				size = tmp;
 				x = i;
 				y = j;
