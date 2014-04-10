@@ -23,14 +23,14 @@ var stage;
 var GLOBAL = {
 	SEED: 2,
 	FPS: 60,
-	SIM_SPEED: 5, // iterations per tick
-	SIM_DELAY: 10, // tick delay (ms)
+	SIM_SPEED: 30, // iterations per tick
+	SIM_DELAY: 1, // tick delay (ms)
 	SUBMISSIONS: 1,
 	stageWidth: 320,
 	stageHeight: 320,
 	lock: false,
 	rounds: 50,
-	iterations: 200,
+	iterations: 1000,
 	swap: true
 }
 
@@ -159,6 +159,9 @@ info.setMode(0);
 info.domElement.style.position = 'absolute';
 info.domElement.style.left = '20px';
 info.domElement.style.top = '75px';
+$(function() {
+	$('#gameContainer').append( info.domElement );
+})
 
 
 var Game = {
@@ -222,7 +225,6 @@ var Game = {
 			info.setAll( 'Starting...' );
 
 			console.log("Starting...");
-			$('#gameContainer').append( info.domElement );
 
 			if (!canvas) {
 				console.error("Provide the canvas element id to draw on.");
@@ -720,7 +722,7 @@ StoneGuardianWolf.move = function() {
 	}
 
 	if (seeNoStone) { // Find a pet stone! :3
-		if (Math.random() < .5) {
+		if (Math.random() < .5 || clairvoyance[1][2] >= 45) {
 			// try move right
 			if (clairvoyance[2][1] < 45)
 				return MoveEnum.RIGHT;
