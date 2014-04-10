@@ -18,9 +18,9 @@ var stage;
 var GLOBAL = {
 	SEED: 2,
 	FPS: 10,
-	SIM_SPEED: 25, // iterations per second
-	SIM_DELAY: 1,
-	SUBMISSIONS: 5,
+	SIM_SPEED: 25, // iterations per tick
+	SIM_DELAY: 1, // tick delay (ms)
+	SUBMISSIONS: 3,
 	stageWidth: 320,
 	stageHeight: 320,
 	lock: false,
@@ -57,6 +57,10 @@ var DATA = {
 			DATA.bears = 0;
 			DATA.lions = 0;
 			DATA.stones = 0;
+	},
+
+	getAvgOf: function(animal) {
+		return ((animal / DATA.rounds) || 0).toFixed(1);
 	},
 
 	stringAverage: function() {
@@ -166,9 +170,6 @@ var Game = {
 	restart: function() {
 		if (!GLOBAL.lock) {
 			GLOBAL.lock = true;
-
-			// reset data
-			DATA.reset();
 
 			var w = GLOBAL.stageWidth;
 			var h = GLOBAL.stageHeight;
@@ -342,6 +343,12 @@ var Game = {
 
 				// display averages after round
 				info.setInfo2(DATA.stringAverage());
+
+				// display it to the html
+				$("#BearCount span").text( DATA.getAvgOf(DATA.bears) );
+				$("#LionCount span").text( DATA.getAvgOf(DATA.lions) );
+				$("#StoneCount span").text( DATA.getAvgOf(DATA.stones) );
+				$("#WolfCount span").text( DATA.getAvgOf(DATA.wolves) );
 
 				// check if done
 				if (!(Game.rounds <= GLOBAL.rounds)) {
@@ -562,7 +569,7 @@ Stone.move = function() {
 
 var Wolf = Object.create(Animal);
 Wolf.char = 'W';
-Wolf.color = "blue";
+Wolf.color = "cyan";
 
 Wolf.fight = function(opponent) {
 	switch (opponent.char) {

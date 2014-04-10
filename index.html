@@ -16,6 +16,23 @@
 		.input-group {
 			color: #222;
 		}
+
+		#BearCount a {
+			color: brown;
+		}
+
+		#LionCount a {
+			color: yellow;
+		}
+
+		#StoneCount a {
+			color: gray;
+		}
+
+		#WolfCount a {
+			color: cyan;
+		}
+
 	</style>
 
 	<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
@@ -51,9 +68,13 @@
 			</canvas>
 			<div id="ui" class="input-group col-md-6 col-sm-6">
 				<ul class="list-group">
-					<input class="list-group-item" type="text" placeholder="rounds">
-					<input class="list-group-item" type="text" placeholder="iterations">
-					<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="init('myCanvas')">Simulate</button>
+					<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="init('myCanvas')">Simulate
+					</button>
+					<li></li>
+					<li id="BearCount"><a href="#">Bears <span class="badge">0</span></a></li>
+					<li id="LionCount"><a href="#">Lions <span class="badge">0</span></a></li>
+					<li id="StoneCount"><a href="#">Stones <span class="badge">0</span></a></li>
+					<li id="WolfCount"><a href="#">Wolves <span class="badge">0</span></a></li>
 				</ul>
 			</div>
 		</div>
