@@ -59,27 +59,25 @@
 </head>
 
 <body>
-	<h1 class="container">Title</h1>
-	<div class="container">
+	<div class="container row">
+		<h1>WildJS</h1>
 
-
-		<div id="container" class="container row">
-			<canvas id="myCanvas" class="col-md-6 col-sm-6">
+		<div id="gameContainer">
+			<canvas id="myCanvas" class="col-md-5 col-sm-6 col-lg-4">
 			</canvas>
-			<div id="ui" class="input-group col-md-6 col-sm-6">
-				<ul class="list-group">
-					<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="init('myCanvas')">Simulate
-					</button>
-					<li></li>
-					<li id="BearCount"><a href="#">Bears <span class="badge">0</span></a></li>
-					<li id="LionCount"><a href="#">Lions <span class="badge">0</span></a></li>
-					<li id="StoneCount"><a href="#">Stones <span class="badge">0</span></a></li>
-					<li id="WolfCount"><a href="#">Wolves <span class="badge">0</span></a></li>
-				</ul>
-			</div>
 		</div>
 
-
+		<div id="ui" class="input-group">
+			<ul class="list-group">
+				<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="init('myCanvas')">Simulate
+				</button>
+				<li></li>
+				<li id="BearCount"><a href="#">Bears <span class="badge">0</span></a></li>
+				<li id="LionCount"><a href="#">Lions <span class="badge">0</span></a></li>
+				<li id="StoneCount"><a href="#">Stones <span class="badge">0</span></a></li>
+				<li id="WolfCount"><a href="#">Wolves <span class="badge">0</span></a></li>
+			</ul>
+		</div>
 
 	</div> <!-- container -->
 </body>

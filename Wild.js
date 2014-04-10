@@ -150,7 +150,7 @@ var newBlock = function(x, y, w, h, color) {
 var info = new Info();
 info.setMode(0);
 info.domElement.style.position = 'absolute';
-info.domElement.style.left = '75px';
+info.domElement.style.left = '20px';
 info.domElement.style.top = '75px';
 
 
@@ -207,7 +207,7 @@ var Game = {
 			info.setAll( 'Starting...' );
 
 			console.log("Starting...");
-			$('#container').append( info.domElement );
+			$('#gameContainer').append( info.domElement );
 
 			if (!canvas) {
 				console.error("Provide the canvas element id to draw on.");
