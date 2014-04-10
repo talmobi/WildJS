@@ -22,15 +22,15 @@ var stage;
 
 var GLOBAL = {
 	SEED: 2,
-	FPS: 10,
-	SIM_SPEED: 1, // iterations per tick
-	SIM_DELAY: 33, // tick delay (ms)
-	SUBMISSIONS: 3,
+	FPS: 20,
+	SIM_SPEED: 25, // iterations per tick
+	SIM_DELAY: 1, // tick delay (ms)
+	SUBMISSIONS: 1,
 	stageWidth: 320,
 	stageHeight: 320,
 	lock: false,
 	rounds: 100,
-	iterations: 100,
+	iterations: 250,
 	swap: true
 }
 
@@ -57,7 +57,7 @@ var DATA = {
 	stones: 0,
 
 	reset: function() {
-			//DATA.rounds = 0;
+			DATA.rounds = 0;
 			DATA.wolves = 0;
 			DATA.bears = 0;
 			DATA.lions = 0;
@@ -200,7 +200,7 @@ var Game = {
 						this.populate(Lion, 100);
 						break;
 					case 2:
-						this.populate(ClaireWolf, 100);
+						this.populate(TestWolf, 100);
 						break;
 					default:
 						this.populate(Stone, 100);
@@ -218,6 +218,7 @@ var Game = {
 
 		setTimeout(function() {
 
+			info.setMode(0);
 			info.setAll( 'Starting...' );
 
 			console.log("Starting...");
@@ -260,7 +261,7 @@ var Game = {
 						Game.populate(Lion, 100);
 						break;
 					case 2:
-						Game.populate(ClaireWolf, 100);
+						Game.populate(TestWolf, 100);
 						break;
 					default:
 						Game.populate(Stone, 100);
@@ -331,6 +332,7 @@ var Game = {
 	stop: function() {
 		Game.isRunning = false;
 		info.setAll("Stopped.");
+
 	},
 
 	simulate: function() {
@@ -341,7 +343,7 @@ var Game = {
 
 		info.setInfo1('Iterations: ' + Game.iterations + "\nRounds: " + Game.rounds);
 
-		var limit = Math.min(GLOBAL.SIM_SPEED, 50);
+		var limit = Math.min(GLOBAL.SIM_SPEED, 75);
 		for (var i = 0; i < limit; i++) {
 
 			if (Game.iterations < GLOBAL.iterations) {			
@@ -612,13 +614,15 @@ Wolf.move = function() {
 }
 
 // my wolf
-var ClaireWolf = Object.create(Wolf);
-ClaireWolf.color = "#7f1a1a";
+var StoneGuardianWolf = Object.create(Wolf);
+StoneGuardianWolf.color = "#7f1a1a";
 
-ClaireWolf.fight = function(opponent) {
+StoneGuardianWolf.fight = function(opponent) {
 	switch (opponent.char) {
 		case 'B': return AttackEnum.SCISSORS;
-		case 'L': return AttackEnum.SCISSORS;
+		case 'L': 
+			console.log("FIGHTING LION");
+			return AttackEnum.SCISSORS;
 		case 'S': return AttackEnum.PAPER;
 		case 'W':
 			var n = Math.floor(Math.random() * 3);
@@ -628,49 +632,59 @@ ClaireWolf.fight = function(opponent) {
 	}
 }
 
-ClaireWolf.move = function() {
+StoneGuardianWolf.move = function() {
 	var surr = this.surroundings;
 
 	var clairvoyance = [];
 	for (var i = 0; i < 3; i++)
-		clairvoyance[i] = [0, 0, 0];
+		clairvoyance[i] = [1, 1, 1];
 
 	for (var i = 0; i < 3; i++) {
 		for (var j = 0; j < 3; j++) {
 			switch (surr[i][j]) {
 				case 'L':
+					if (i < 1 && j < 1) {
+						clairvoyance[1][0]  += 50;
+						clairvoyance[0][1] += 50;
+					}
+
+					if (i === 1 && j < 1) { // above
+						clairvoyance[1][1] += 50;
+					}
+
+					if (i < 1 && j === 1) { // left
+						clairvoyance[1][1] += 50;
+					}
+					break;
+
+				case 'S': // seek stones for protection
+					clairvoyance[i][j] += 0; // avoid destroying stones
 					if (i < 2)
-						clairvoyance[i + 1][j]  += 5;
+						clairvoyance[i+1][j] -= 1;
 					if (j < 2)
-						clairvoyance[i][j + 1] += 5;
-					break;
-
-				case 'S':
-					clairvoyance[i][j] += 1;
-					break;
-
-				case 'B':
-					var m = 1;
+						clairvoyance[i][j+1] -= 1;
 					if (i > 0)
-						clairvoyance[i - 1][j] += m;
+						clairvoyance[i-1][j] -= 1;
 					if (j > 0)
-						clairvoyance[i][j - 1] += m;
-					if (i < 2)
-						clairvoyance[i + 1][j] += m;
-					if (j < 2)
-						clairvoyance[i][j + 1] += m;
+						clairvoyance[i][j-1] -= 1;
+					break;
+
+				case 'B': // ignore bears
 					break;
 
 				case 'W':
-					var m = 3;
-					if (i > 0)
-						clairvoyance[i - 1][j] += m;
-					if (j > 0)
-						clairvoyance[i][j - 1] += m;
+					// skip self
+					if (i === 1 && j === 1)
+						continue;
+					var m = 3; // avoid wolves
 					if (i < 2)
-						clairvoyance[i + 1][j] += m;
+						clairvoyance[i+1][j] += m;
 					if (j < 2)
-						clairvoyance[i][j + 1] += m;
+						clairvoyance[i][j+1] += m;
+					if (i > 0)
+						clairvoyance[i-1][j] += m;
+					if (j > 0)
+						clairvoyance[i][j-1] += m;
 					break;
 
 				default:
@@ -679,29 +693,34 @@ ClaireWolf.move = function() {
 		} // for loop
 	} // for loop
 
-	var size = 0;
+	var size = clairvoyance[1][1];
 	var x = 1;
 	var y = 1;
 
 	for (var i = 0; i < 3; i++) {
 		for (var j = 0; j < 3; j++) {
-			var tmp = clairvoyance[i][j] || 0;
-			if (tmp < size) {
+			if (i != 1 || j != 1)
+				continue;
+			var tmp = clairvoyance[i][j];
+			if (tmp = size) {
 				size = tmp;
 				x = i;
 				y = j;
 			}
-		} // for loop
-	} // for loop
+		}
+	}
 
-	if (x < 1)
+	if (i < 1 && y === 1)
 		return MoveEnum.LEFT;
-	if (x > 1)
+	if (i > 1 && y === 1)
 		return MoveEnum.RIGHT;
-	if (y < 1)
+	if (i === 1 && y < 1)
 		return MoveEnum.UP;
-	if (y > 1)
+	if (i === 1 && y > 1)
 		return MoveEnum.DOWN;
+
 	return MoveEnum.HOLD;
 
 } // move()
+
+var TestWolf = Object.create(StoneGuardianWolf);

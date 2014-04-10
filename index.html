@@ -49,9 +49,10 @@
 				var canvas = $('#' + id)[0];
 
 				Game.stop();
-				Game.init(canvas);
 
-				setTimeout(function() {  b = true; }, 500);
+				setTimeout( function() {Game.init(canvas); }, 500)
+
+				setTimeout(function() {  b = true; }, 2000);
 			}
 		}
 	</script>
