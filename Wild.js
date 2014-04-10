@@ -23,14 +23,14 @@ var stage;
 var GLOBAL = {
 	SEED: 2,
 	FPS: 60,
-	SIM_SPEED: 30, // iterations per tick
+	SIM_SPEED: 4, // iterations per tick
 	SIM_DELAY: 1, // tick delay (ms)
 	SUBMISSIONS: 1,
 	stageWidth: 320,
 	stageHeight: 320,
 	lock: false,
 	rounds: 50,
-	iterations: 1000,
+	iterations: 250,
 	swap: true
 }
 
