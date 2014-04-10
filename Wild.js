@@ -623,7 +623,7 @@ StoneGuardianWolf.fight = function(opponent) {
 		case 'L': 
 			console.log("FIGHTING LION");
 			return AttackEnum.SCISSORS;
-		case 'S': // A motherly saccrifice
+		case 'S': // A motherly sacrifice
 			return AttackEnum.SUICIDE;
 		case 'W':
 			var n = Math.floor(Math.random() * 3);
