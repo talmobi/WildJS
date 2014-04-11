@@ -226,6 +226,9 @@ var Game = {
 
 			console.log("Starting...");
 
+			// start from fresh board
+			Game.board = Tools.createEmptyBoard(Tools.SIZE);
+
 			if (!canvas) {
 				console.error("Provide the canvas element id to draw on.");
 				return;
