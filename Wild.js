@@ -21,10 +21,11 @@ var MoveEnum = {
 var stage;
 
 var GLOBAL = {
+	SAFETY: true, // slow down if necessary
 	SEED: 2,
-	FPS: 60,
-	SIM_SPEED: 4, // iterations per tick
-	SIM_DELAY: 1, // tick delay (ms)
+	FPS: 40,
+	SIM_SPEED: 1, // iterations per tick
+	SIM_DELAY: 10, // tick delay (ms)
 	SUBMISSIONS: 1,
 	stageWidth: 320,
 	stageHeight: 320,
@@ -217,6 +218,15 @@ var Game = {
 		}
 	},
 
+	setup: function(safety, fps, delay, speed, rounds, iterations) {
+		GLOBAL.SAFETY = safety;
+		GLOBAL.FPS = fps;
+		GLOBAL.SIM_DELAY = delay;
+		GLOBAL.SIM_SPEED = speed;
+		GLOBAL.rounds = rounds;
+		GLOBAL.iterations = iterations;
+	},
+
 	init: function(canvas, fps) {
 
 		setTimeout(function() {
@@ -350,6 +360,16 @@ var Game = {
 
 		var limit = Math.min(GLOBAL.SIM_SPEED, 75);
 		for (var i = 0; i < limit; i++) {
+
+			// slow down if device can't handle it
+			if (GLOBAL.SAFETY && GLOBAL.iterations > 25 && createjs.Ticker.getMeasuredFPS() < 10) {
+				GLOBAL.SIM_SPEED = 1;
+				GLOBAL.SIM_DELAY = 100;
+				GLOBAL.iterations = 100;
+				createjs.Ticker.setFPS(10);
+				i = limit;
+				continue;
+			}
 
 			if (Game.iterations < GLOBAL.iterations) {			
 				Game.iterate();

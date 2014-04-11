@@ -50,10 +50,50 @@
 
 				Game.stop();
 
+				Game.setup(true, 20, 50, 1, 5, 100);
+
 				setTimeout( function() {Game.init(canvas); }, 500)
 
 				setTimeout(function() {  b = true; }, 2000);
 			}
+		}
+
+		var initFast = function(id) {
+			if (b) {
+				b = false;
+				var canvas = $('#' + id)[0];
+
+				Game.stop();
+
+				// safety on (slows down if necessary)
+				Game.setup(true, 60, 1, 10, 25, 300);
+
+				setTimeout( function() {Game.init(canvas); }, 500)
+
+				setTimeout(function() {  b = true; }, 2000);
+			}
+		}
+
+		var initFastest = function(id) {
+			if (b) {
+				b = false;
+				var canvas = $('#' + id)[0];
+
+				Game.stop();
+
+				// safety off, 100 rounds 1000 iterations - full speed
+				Game.setup(false, 80, 1, 50, 50, 250);
+
+
+				setTimeout( function() {Game.init(canvas); }, 500)
+
+				setTimeout(function() {  b = true; }, 2000);
+			}
+		}
+
+		var STAHP = function() {
+			Game.stop();
+			createjs.Ticker.setFPS(5);
 		}
 	</script>
 
@@ -70,13 +110,25 @@
 
 		<div id="ui" class="input-group">
 			<ul class="list-group">
-				<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="init('myCanvas')">Simulate
+				<button class="list-group-item btn btn-success" type="list-group-item button" onclick="init('myCanvas')">Simulate Slow
+				</button>
+				<li></li>
+				<button class="list-group-item btn btn-primary" type="list-group-item button" onclick="initFast('myCanvas')">Simulate Fast
 				</button>
 				<li></li>
 				<li id="BearCount"><a href="#">Bears <span class="badge">0</span></a></li>
 				<li id="LionCount"><a href="#">Lions <span class="badge">0</span></a></li>
 				<li id="StoneCount"><a href="#">Stones <span class="badge">0</span></a></li>
 				<li id="WolfCount"><a href="#">Wolves <span class="badge">0</span></a></li>
+
+				<li></li>
+				<li></li>
+				<li></li>
+				<button class="list-group-item btn btn-danger" type="list-group-item button" onclick="initFastest('myCanvas')">Simulate FASTER! (CPU and GC hog)
+				</button>
+				<li></li>
+				<button class="list-group-item btn btn-warning" type="list-group-item button" onclick="STAHP()">Stop!
+				</button>
 			</ul>
 		</div>
 
