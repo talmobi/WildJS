@@ -410,16 +410,25 @@ var Game = {
 		//stats.end();
 	},
 
-	populate: function(species, num) {
-		while (num > 0) {
-			var row = Math.floor(Game.random() * Tools.SIZE),
-					col = Math.floor(Game.random() * Tools.SIZE);
-					// console.log("row: " + row + ", col: " + col);
-			if (this.board[row][col].length < 1) {
-				var babyAnimal = new species();
-				this.board[row][col].push( babyAnimal );
-				num--;
+	populate: function(Species, num) {
+		var gpig = new Species();
+		if ( gpig instanceof Animal ) {
+			if (gpig instanceof Wolf && gpig.char != 'W') {
+				console.log("Mutated illegal wolf.")
+				return;
 			}
+			while (num > 0) {
+				var row = Math.floor(Game.random() * Tools.SIZE),
+						col = Math.floor(Game.random() * Tools.SIZE);
+						// console.log("row: " + row + ", col: " + col);
+				if (this.board[row][col].length < 1) {
+					var babyAnimal = new Species();
+					this.board[row][col].push( babyAnimal );
+					num--;
+				}
+			}
+		} else {
+			console.log( Object.getPrototypeOf(Species.prototype) );
 		}
 	},
 
@@ -664,13 +673,13 @@ Wolf.prototype.move = function() {
 	*	StoneGuardianWolf Constructor
 	*/
 function StoneGuardianWolf() {
-	Animal.call(this, 'W');
+	Wolf.call(this);
 	this._heartache = 0;
 	this._petRock = false;
 	this.color = '#7f1a1a';
 }
 // set prototype & constructor
-StoneGuardianWolf.prototype = Object.create(Animal.prototype);
+StoneGuardianWolf.prototype = Object.create(Wolf.prototype);
 StoneGuardianWolf.prototype.constructor = StoneGuardianWolf;
 // Methods
 
