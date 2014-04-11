@@ -416,7 +416,7 @@ var Game = {
 					col = Math.floor(Game.random() * Tools.SIZE);
 					// console.log("row: " + row + ", col: " + col);
 			if (this.board[row][col].length < 1) {
-				var babyAnimal = Object.create(species);
+				var babyAnimal = new species();
 				this.board[row][col].push( babyAnimal );
 				num--;
 			}
@@ -528,42 +528,58 @@ var Game = {
 			} // for loop
 		} // for loop
 	}
-
-
 }
 
-var Animal = {
-	char: '',
-	color: 'white',
-	surroundings: [],
-	MAP_SIZE: Tools.SIZE,
 
-	constructor: function(char, color) {
-		this.char = char;
-		this.color = color;
-	},
+/**
+	*	'Classes'
+	*/
 
-	fight: function(opponent) {
-		return AttackEnum.SUICIDE;
-	},
-
-	move: function() {
-		return AttackEnum.HOLD;
-	}
+/**
+	*	Animal Constructor
+	*/
+function Animal(char) {
+	this.char = char;
+	this.color = (function() {
+		switch (char) {
+			case 'B': return 'green';
+			case 'L': return 'yellow';
+			case 'S': return 'gray';
+			case 'W': return 'red';
+			default:
+				this.char = 'W';
+				return 'white';
+		}
+	})();
+}
+// Methods
+Animal.prototype.fight = function(opponent) {
+	return AttackEnum.SUICIDE;
+}
+Animal.prototype.move = function() {
+	return AttackEnum.HOLD;
 }
 
-var Bear = Object.create(Animal);
-Bear.constructor('B', 'green');
-Bear.counter = -1;
+/**
+	* Bear Constructor
+	*/
+function Bear() {
+	Animal.call(this, 'B');
+	this._counter = -1;
+}
+// set prototype
+Bear.prototype = Object.create(Animal.prototype);
+// set constructor
+Bear.prototype.constructor = Bear;
 
-Bear.fight = function(opponent) {
+// Methods
+Bear.prototype.fight = function(opponent) {
 	return AttackEnum.PAPER;
 }
-
-Bear.move = function() {
-	if (++this.counter == 16)
-		this.counter = 0;
-	switch (Math.floor(this.counter / 4)) {
+Bear.prototype.move = function() {
+	if (++this._counter == 16)
+		this._counter = 0;
+	switch (Math.floor(this._counter / 4)) {
 		case 0: return MoveEnum.DOWN;
 		case 1: return MoveEnum.RIGHT;
 		case 2: return MoveEnum.UP;
@@ -571,41 +587,64 @@ Bear.move = function() {
 	}
 }
 
-var Lion = Object.create(Animal);
-Lion.constructor('L', 'yellow');
-Lion.toggle = true;
+/**
+	*	Lion Constructor
+	*/
+function Lion() {
+	Animal.call(this, 'L');
+	this._toggle = true;
+}
+// set prototype
+Lion.prototype = Object.create(Animal.prototype);
+// set constructor
+Lion.prototype.constructor = Lion;
 
-Lion.fight = function(opponent) {
+// Methods
+Lion.prototype.fight = function(opponent) {
 	return Math.random() > 0.5 ? AttackEnum.PAPER : AttackEnum.SCISSORS;
 }
-
-Lion.move = function() {
-	this.toggle = !this.toggle;
-	return this.toggle ? MoveEnum.DOWN : MoveEnum.RIGHT;
+Lion.prototype.move = function() {
+	this._toggle = !this._toggle;
+	return this._toggle ? MoveEnum.DOWN : MoveEnum.RIGHT;
 }
 
-var Stone = Object.create(Animal);
-Stone.constructor('S', 'gray');
+/**
+	*	Stone Constructor
+	*/
+function Stone() {
+	Animal.call(this, 'S');
 
-Stone.fight = function(opponent) {
+}
+// set prototype & constructor
+Stone.prototype = Object.create(Animal.prototype);
+Stone.prototype.constructor = Stone;
+// Methods
+Stone.prototype.fight = function(opponent) {
 	return AttackEnum.ROCK;
 }
-Stone.move = function() {
+Stone.prototype.move = function() {
 	return MoveEnum.HOLD;
 }
 
-var Wolf = Object.create(Animal);
-Wolf.constructor('W', 'blue');
-
-Wolf.fight = function(opponent) {
-	switch (opponent.char) {
+/**
+	*	Wolf Constructor
+	*/
+function Wolf() {
+	Animal.call(this, 'W');
+}
+// set prorotype & constructor
+Wolf.prototype = Object.create(Animal.prototype);
+Wolf.prototype.constructor = Wolf;
+// Methods
+Wolf.prototype.fight = function(opponent) {
+	switch (opponent) {
 		case 'B': return AttackEnum.SCISSORS;
 		case 'L': return AttackEnum.SCISSORS;
 		case 'S': return AttackEnum.PAPER;
 		default: return AttackEnum.ROCK;
 	}
 }
-Wolf.move = function() {
+Wolf.prototype.move = function() {
 	var surr = this.surroundings;
 	if (surr != null) {
 		if (Math.random() < 0.2)
@@ -621,14 +660,22 @@ Wolf.move = function() {
 	}
 }
 
-// my wolf SGW
-var StoneGuardianWolf = Object.create(Wolf);
-StoneGuardianWolf.constructor('W', '#7f1a1a');
-StoneGuardianWolf.heartache = 0;
-StoneGuardianWolf.petRock = false;
+/**
+	*	StoneGuardianWolf Constructor
+	*/
+function StoneGuardianWolf() {
+	Animal.call(this, 'W');
+	this._heartache = 0;
+	this._petRock = false;
+	this.color = '#7f1a1a';
+}
+// set prototype & constructor
+StoneGuardianWolf.prototype = Object.create(Animal.prototype);
+StoneGuardianWolf.prototype.constructor = StoneGuardianWolf;
+// Methods
 
-StoneGuardianWolf.fight = function(opponent) {
-	this.heartache--;
+StoneGuardianWolf.prototype.fight = function(opponent) {
+	this._heartache--;
 
 	switch (opponent.char) {
 		case 'B': return AttackEnum.SCISSORS;
@@ -638,14 +685,14 @@ StoneGuardianWolf.fight = function(opponent) {
 		case 'S': // A motherly sacrifice
 			return AttackEnum.SUICIDE;
 		case 'W':
-			var n = this.heartache % 3;
+			var n = this._heartache % 3;
 			if (n < 1) return AttackEnum.PAPER;
 			if (n < 2) return AttackEnum.ROCK;
 			return AttackEnum.SCISSORS;
 	}
 }
 
-StoneGuardianWolf.move = function() {
+StoneGuardianWolf.prototype.move = function() {
 	var surr = this.surroundings;
 
 	var clairvoyance = [];
@@ -677,7 +724,7 @@ StoneGuardianWolf.move = function() {
 
 				case 'S': // seek stones for protection
 					seeNoStone = false;
-					this.petRock = true;
+					this._petRock = true;
 
 					clairvoyance[i][j] += 999; // Only hugs!
 					if (i < 2)
@@ -700,7 +747,7 @@ StoneGuardianWolf.move = function() {
 					var m = 25; // avoid wolves
 
 					// don't fight unless pet rock is in danger
-					if (this.petRock)
+					if (this._petRock)
 						clairvoyance[i][j] -= 999; // motherly wrath
 					else
 						clairvoyance[i][j] += 100;
@@ -741,12 +788,12 @@ StoneGuardianWolf.move = function() {
 	}
 
 	if (seeNoStone)
-		this.heartache++;
+		this._heartache++;
 
-	this.petRock = false;
+	this._petRock = false;
 
-	if (seeNoStone && (this.heartache % 10) === 0 ) { // Find a pet stone! :3
-		if ( (this.heartache % 3) < 2 || clairvoyance[1][2] >= 45) {
+	if (seeNoStone && (this._heartache % 10) === 0 ) { // Find a pet stone! :3
+		if ( (this._heartache % 3) < 2 || clairvoyance[1][2] >= 45) {
 			// try move right
 			if (clairvoyance[2][1] < 45)
 				return MoveEnum.RIGHT;
@@ -767,10 +814,10 @@ StoneGuardianWolf.move = function() {
 		return MoveEnum.DOWN;
 
 	if (!seeNoStone)
-		this.petRock = true;
+		this._petRock = true;
 
 	return MoveEnum.HOLD;
 
 } // move()
 
-var TestWolf = Object.create(StoneGuardianWolf);
+var TestWolf = StoneGuardianWolf;
