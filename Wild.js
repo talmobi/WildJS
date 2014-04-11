@@ -618,8 +618,11 @@ Wolf.move = function() {
 // my wolf
 var StoneGuardianWolf = Object.create(Wolf);
 StoneGuardianWolf.color = "#7f1a1a";
+StoneGuardianWolf.heartache = 0;
 
 StoneGuardianWolf.fight = function(opponent) {
+	this.heartache--;
+
 	switch (opponent.char) {
 		case 'B': return AttackEnum.SCISSORS;
 		case 'L': 
@@ -628,7 +631,7 @@ StoneGuardianWolf.fight = function(opponent) {
 		case 'S': // A motherly sacrifice
 			return AttackEnum.SUICIDE;
 		case 'W':
-			var n = Math.floor(Math.random() * 3);
+			var n = this.heartache % 3;
 			if (n < 1) return AttackEnum.PAPER;
 			if (n < 2) return AttackEnum.ROCK;
 			return AttackEnum.SCISSORS;
@@ -687,15 +690,17 @@ StoneGuardianWolf.move = function() {
 					if (i === 1 && j === 1)
 						continue;
 					var m = 25; // avoid wolves
-					clairvoyance[i][j] += m*3;
-					if (i < 2)
-						clairvoyance[i+1][j] += m;
-					if (j < 2)
-						clairvoyance[i][j+1] += m;
-					if (i > 0)
-						clairvoyance[i-1][j] += m;
-					if (j > 0)
-						clairvoyance[i][j-1] += m;
+					clairvoyance[i][j] += 100;
+					if (i != 1 && j != 1) {
+						if (i < 2)
+							clairvoyance[i+1][j] += m;
+						if (j < 2)
+							clairvoyance[i][j+1] += m;
+						if (i > 0)
+							clairvoyance[i-1][j] += m;
+						if (j > 0)
+							clairvoyance[i][j-1] += m;
+					}
 					break;
 
 				default:
@@ -721,12 +726,15 @@ StoneGuardianWolf.move = function() {
 		}
 	}
 
-	if (seeNoStone) { // Find a pet stone! :3
-		if (Math.random() < .5 || clairvoyance[1][2] >= 45) {
+	if (seeNoStone)
+		this.heartache++;
+
+	if (seeNoStone && (this.heartache % 10) === 0 ) { // Find a pet stone! :3
+		if ( (this.heartache % 3) < 2 || clairvoyance[1][2] >= 45) {
 			// try move right
 			if (clairvoyance[2][1] < 45)
 				return MoveEnum.RIGHT;
-		} 
+		}
 
 		// try down instead
 		if (clairvoyance[1][2] < 45)
