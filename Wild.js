@@ -534,8 +534,14 @@ var Game = {
 
 var Animal = {
 	char: '',
+	color: 'white',
 	surroundings: [],
 	MAP_SIZE: Tools.SIZE,
+
+	constructor: function(char, color) {
+		this.char = char;
+		this.color = color;
+	},
 
 	fight: function(opponent) {
 		return AttackEnum.SUICIDE;
@@ -547,8 +553,7 @@ var Animal = {
 }
 
 var Bear = Object.create(Animal);
-Bear.char = 'B';
-Bear.color = "green";
+Bear.constructor('B', 'green');
 Bear.counter = -1;
 
 Bear.fight = function(opponent) {
@@ -567,8 +572,7 @@ Bear.move = function() {
 }
 
 var Lion = Object.create(Animal);
-Lion.char = 'L';
-Lion.color = "yellow";
+Lion.constructor('L', 'yellow');
 Lion.toggle = true;
 
 Lion.fight = function(opponent) {
@@ -581,8 +585,8 @@ Lion.move = function() {
 }
 
 var Stone = Object.create(Animal);
-Stone.char = 'S';
-Stone.color = "gray";
+Stone.constructor('S', 'gray');
+
 Stone.fight = function(opponent) {
 	return AttackEnum.ROCK;
 }
@@ -591,8 +595,7 @@ Stone.move = function() {
 }
 
 var Wolf = Object.create(Animal);
-Wolf.char = 'W';
-Wolf.color = "blue";
+Wolf.constructor('W', 'blue');
 
 Wolf.fight = function(opponent) {
 	switch (opponent.char) {
@@ -620,7 +623,7 @@ Wolf.move = function() {
 
 // my wolf SGW
 var StoneGuardianWolf = Object.create(Wolf);
-StoneGuardianWolf.color = "#7f1a1a";
+StoneGuardianWolf.constructor('W', '#7f1a1a');
 StoneGuardianWolf.heartache = 0;
 StoneGuardianWolf.petRock = false;
 
