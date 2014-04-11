@@ -618,10 +618,11 @@ Wolf.move = function() {
 	}
 }
 
-// my wolf
+// my wolf SGW
 var StoneGuardianWolf = Object.create(Wolf);
 StoneGuardianWolf.color = "#7f1a1a";
 StoneGuardianWolf.heartache = 0;
+StoneGuardianWolf.petRock = false;
 
 StoneGuardianWolf.fight = function(opponent) {
 	this.heartache--;
@@ -673,6 +674,7 @@ StoneGuardianWolf.move = function() {
 
 				case 'S': // seek stones for protection
 					seeNoStone = false;
+					this.petRock = true;
 
 					clairvoyance[i][j] += 999; // Only hugs!
 					if (i < 2)
@@ -693,7 +695,13 @@ StoneGuardianWolf.move = function() {
 					if (i === 1 && j === 1)
 						continue;
 					var m = 25; // avoid wolves
-					clairvoyance[i][j] += 100;
+
+					// don't fight unless pet rock is in danger
+					if (this.petRock)
+						clairvoyance[i][j] -= 999; // motherly wrath
+					else
+						clairvoyance[i][j] += 100;
+					
 					if (i != 1 && j != 1) {
 						if (i < 2)
 							clairvoyance[i+1][j] += m;
@@ -732,6 +740,8 @@ StoneGuardianWolf.move = function() {
 	if (seeNoStone)
 		this.heartache++;
 
+	this.petRock = false;
+
 	if (seeNoStone && (this.heartache % 10) === 0 ) { // Find a pet stone! :3
 		if ( (this.heartache % 3) < 2 || clairvoyance[1][2] >= 45) {
 			// try move right
@@ -752,6 +762,9 @@ StoneGuardianWolf.move = function() {
 		return MoveEnum.UP;
 	if (x === 1 && y === 2)
 		return MoveEnum.DOWN;
+
+	if (!seeNoStone)
+		this.petRock = true;
 
 	return MoveEnum.HOLD;
 
