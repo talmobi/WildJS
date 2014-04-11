@@ -5,7 +5,12 @@ public class StoneGuardianWolf extends Animal {
 		super('W');
 	}
 
+	private boolean petRock = false;
+	private int heartache = 0;
+
 	public Attack fight(char c) {
+		this.heartache--;
+
 		switch (c) {
 		case 'B':
 			return Attack.SCISSORS;
@@ -14,7 +19,7 @@ public class StoneGuardianWolf extends Animal {
 		case 'S': // A motherly sacrifice
 			return Attack.SUICIDE;
 		default:
-			int n = (int) (Math.random() * 3);
+			int n = this.heartache % 3;
 			if (n < 1)
 				return Attack.PAPER;
 			if (n < 2)
@@ -53,6 +58,7 @@ public class StoneGuardianWolf extends Animal {
 
 				case 'S': // seek stones for protection
 					seeNoStone = false;
+					this.petRock = true;
 					clairvoyance[i][j] += 999; // Only hugs!
 					if (i < 2)
 						clairvoyance[i + 1][j] -= 10;
@@ -72,15 +78,24 @@ public class StoneGuardianWolf extends Animal {
 					if (i == 1 && j == 1)
 						continue;
 					int m = 25; // avoid wolves
-					clairvoyance[i][j] += m * 3;
-					if (i < 2)
-						clairvoyance[i + 1][j] += m;
-					if (j < 2)
-						clairvoyance[i][j + 1] += m;
-					if (i > 0)
-						clairvoyance[i - 1][j] += m;
-					if (j > 0)
-						clairvoyance[i][j - 1] += m;
+
+					// don't fight unless pet rock is in danger
+					if (petRock)
+						clairvoyance[i][j] -= 999; // motherly wrath
+					else
+						clairvoyance[i][j] += 100;
+
+					// avoid stepping into wolf path
+					if (i != 1 && j != 1) {
+						if (i < 2)
+							clairvoyance[i + 1][j] += m;
+						if (j < 2)
+							clairvoyance[i][j + 1] += m;
+						if (i > 0)
+							clairvoyance[i - 1][j] += m;
+						if (j > 0)
+							clairvoyance[i][j - 1] += m;
+					}
 					break;
 
 				default:
@@ -106,8 +121,12 @@ public class StoneGuardianWolf extends Animal {
 			}
 		}
 
-		if (seeNoStone) { // Find a pet stone! :3
-			if (Math.random() < .5 || clairvoyance[1][2] >= 45) {
+		if (seeNoStone)
+			this.heartache++;
+
+		this.petRock = false;
+		if (seeNoStone && heartache % 10 == 0) { // Find a pet stone! :3
+			if ((heartache % 3) < 2 || clairvoyance[1][2] >= 45) {
 				// try move right
 				if (clairvoyance[2][1] < 45)
 					return Move.RIGHT;
@@ -126,6 +145,9 @@ public class StoneGuardianWolf extends Animal {
 			return Move.UP;
 		if (x == 1 && y == 2)
 			return Move.DOWN;
+
+		if (!seeNoStone)
+			this.petRock = true;
 
 		return Move.HOLD;
 	}
